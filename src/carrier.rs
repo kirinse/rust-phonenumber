@@ -13,34 +13,36 @@
 // limitations under the License.
 
 use std::fmt;
-use std::ops::Deref;
+
+use crate::ParseError;
 
 /// A phone number carrier.
+/// see: https://en.wikipedia.org/wiki/Mobile_country_code#National_operators
 #[derive(Clone, Eq, PartialEq, Serialize, Deserialize, Hash, Debug)]
-pub struct Carrier(pub(crate) String);
-
-impl<T: Into<String>> From<T> for Carrier {
-    fn from(value: T) -> Carrier {
-        Carrier(value.into())
-    }
+pub struct Carrier {
+    pub mcc: u16, // always 3 digits
+    pub mnc: u16, // 2 or 3 digits
 }
 
-impl Deref for Carrier {
-    type Target = str;
+impl TryFrom<&str> for Carrier {
+    type Error = ParseError;
 
-    fn deref(&self) -> &str {
-        &self.0
-    }
-}
-
-impl AsRef<str> for Carrier {
-    fn as_ref(&self) -> &str {
-        &self.0
+    fn try_from(value: &str) -> Result<Self, Self::Error> {
+        Ok(Self {
+            mcc: value
+                .get(0..3)
+                .and_then(|c| c.parse().ok())
+                .ok_or_else(|| ParseError::InvalidCountryCode)?,
+            mnc: value
+                .get(3..)
+                .and_then(|c| c.parse().ok())
+                .ok_or_else(|| ParseError::InvalidNetworkCode)?,
+        })
     }
 }
 
 impl fmt::Display for Carrier {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", self.0)
+        write!(f, "{}{}", self.mcc, self.mnc)
     }
 }
