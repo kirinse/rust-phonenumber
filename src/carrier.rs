@@ -46,3 +46,16 @@ impl fmt::Display for Carrier {
         write!(f, "{}{}", self.mcc, self.mnc)
     }
 }
+
+#[cfg(test)]
+mod test {
+    use std::convert::TryInto;
+    use super::Carrier;
+
+    #[test]
+    fn test_mobile_network_codes() {
+        assert_eq!(Carrier { mcc: 336, mnc: 1}, "336001".try_into().unwrap());
+        assert_eq!(Carrier { mcc: 336, mnc: 35}, "33635".try_into().unwrap());
+    }
+
+}
