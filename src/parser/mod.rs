@@ -85,10 +85,10 @@ pub fn parse_with<S: AsRef<str>>(
             source: number.country,
         },
 
-        national: NationalNumber {
-            value: number.national.parse()?,
-            zeros: number.national.chars().take_while(|&c| c == '0').count() as u8,
-        },
+        national: NationalNumber::new(
+            number.national.parse()?,
+            number.national.chars().take_while(|&c| c == '0').count() as u8,
+        ),
 
         extension: number.extension.map(|s| Extension(s.into_owned())),
         carrier: number.carrier.and_then(|s| {
@@ -113,10 +113,7 @@ mod test {
                 source: country::Source::Default,
             },
 
-            national: NationalNumber {
-                value: 33316005,
-                zeros: 0,
-            },
+            national: NationalNumber::new(33316005, 0),
 
             extension: None,
             carrier: None,
@@ -204,10 +201,7 @@ mod test {
                 source: country::Source::Number,
             },
 
-            national: NationalNumber {
-                value: 64123456,
-                zeros: 0,
-            },
+            national: NationalNumber::new(64123456, 0),
 
             extension: None,
             carrier: None,
@@ -225,10 +219,7 @@ mod test {
                     source: country::Source::Default,
                 },
 
-                national: NationalNumber {
-                    value: 30123456,
-                    zeros: 0,
-                },
+                national: NationalNumber::new(30123456, 0),
 
                 extension: None,
                 carrier: None,
@@ -243,10 +234,7 @@ mod test {
                     source: country::Source::Plus,
                 },
 
-                national: NationalNumber {
-                    value: 2345,
-                    zeros: 0,
-                },
+                national: NationalNumber::new(2345, 0,),
 
                 extension: None,
                 carrier: None,
@@ -261,10 +249,7 @@ mod test {
                     source: country::Source::Default,
                 },
 
-                national: NationalNumber {
-                    value: 12,
-                    zeros: 0,
-                },
+                national: NationalNumber::new(12, 0,),
 
                 extension: None,
                 carrier: None,
@@ -279,10 +264,7 @@ mod test {
                     source: country::Source::Default,
                 },
 
-                national: NationalNumber {
-                    value: 3121286979,
-                    zeros: 0,
-                },
+                national: NationalNumber::new(3121286979, 0),
 
                 extension: None,
                 carrier: "12".try_into().ok(),
@@ -295,5 +277,11 @@ mod test {
     fn issue_43() {
         let res = parser::parse(None, " 2 22#:");
         assert!(res.is_err());
+    }
+
+    #[test]
+    fn advisory_1() {
+        let res = parser::parse(None, ".;phone-context=");
+        assert!(res.is_err(), "{res:?}");
     }
 }
